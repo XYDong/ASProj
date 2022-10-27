@@ -117,7 +117,7 @@ public class HiTabBottom extends RelativeLayout implements IHiTab<HiTabBottomInf
      * @param height
      */
     @Override
-    public void resetHight(int height) {
+    public void resetHeight(int height) {
         ViewGroup.LayoutParams layoutParams = getLayoutParams();
         layoutParams.height = height;
         setLayoutParams(layoutParams);

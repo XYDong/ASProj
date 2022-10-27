@@ -14,5 +14,5 @@ public interface IHiTab<D> extends IHiTabLayout.OnTabSelectedListener<D> {
      * 动态修改某个 item 大小
      * @param height
      */
-    void resetHight(@Px int height);
+    void resetHeight(@Px int height);
 }

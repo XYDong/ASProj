@@ -1,5 +1,7 @@
 package com.joker.common.ui.component;
 
+import android.app.Activity;
+import android.content.Context;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -9,6 +11,8 @@ import androidx.annotation.LayoutRes;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+
+import java.lang.ref.WeakReference;
 
 /**
  * @ProjectName: ASProj
@@ -24,9 +28,16 @@ import androidx.fragment.app.Fragment;
  */
 public abstract class HiBaseFragment extends Fragment {
     protected View layoutView;
+    protected WeakReference<Activity> activityWeakReference;
 
     @LayoutRes
     public abstract int getLayoutId();
+
+    @Override
+    public void onAttach(@NonNull Context context) {
+        super.onAttach(context);
+        activityWeakReference = new WeakReference<>(getActivity());
+    }
 
     @Nullable
     @Override
