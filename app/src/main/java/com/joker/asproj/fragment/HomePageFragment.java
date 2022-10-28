@@ -1,6 +1,7 @@
 package com.joker.asproj.fragment;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Toast;
@@ -8,6 +9,7 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.joker.asproj.banner.HiBannerDemoActivity;
 import com.joker.asproj.R;
 import com.joker.common.ui.component.HiBaseFragment;
 
@@ -70,5 +72,6 @@ public class HomePageFragment extends HiBaseFragment {
         hiTabTopLayout.inflateInfo(infoList);
         hiTabTopLayout.addTabSelectedChangeListener((index, prevInfo, nextInfo) -> Toast.makeText(activity, nextInfo.name, Toast.LENGTH_SHORT).show());
         hiTabTopLayout.defaultSelected(infoList.get(0));
+        activity.findViewById(R.id.to_banner).setOnClickListener( v -> startActivity(new Intent(activity, HiBannerDemoActivity.class)));
     }
 }
