@@ -11,6 +11,7 @@ import org.devio.hi.library.hilibrary.log.HiLog
 import org.devio.hi.ui.tab.binner.HiBanner
 import org.devio.hi.ui.tab.binner.indicator.HiCircleIndicator
 import org.devio.hi.ui.tab.binner.indicator.HiIndicator
+import org.devio.hi.ui.tab.binner.indicator.HiNumIndicator
 
 class HiBannerDemoActivity : HiBaseActivity() {
     lateinit var mHiBanner: HiBanner
@@ -37,7 +38,9 @@ class HiBannerDemoActivity : HiBaseActivity() {
         }
         findViewById<TextView>(R.id.tv_switch).setOnClickListener { view ->
             if (hiIndicator is HiCircleIndicator) {
-
+                initView(HiNumIndicator(this),autoPlay)
+            } else {
+                initView(HiCircleIndicator(this),autoPlay)
             }
         }
     }
