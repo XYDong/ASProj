@@ -41,8 +41,8 @@ public class HiViewPager extends ViewPager {
      * 标志是否有调用过onlayout
      */
     private boolean isLayout;
-    private Handler mHandler = new Handler();
-    private Runnable mRunnable = new Runnable() {
+    private final Handler mHandler = new Handler();
+    private final Runnable mRunnable = new Runnable() {
 
         public void run() {
             next();
@@ -62,7 +62,7 @@ public class HiViewPager extends ViewPager {
 
     public void setAutoPlay(boolean autoPlay){
         this.mAutoPlay = autoPlay;
-        if (!this.mAutoPlay) {
+        if (!mAutoPlay) {
             mHandler.removeCallbacks(mRunnable);
         }
     }
@@ -136,8 +136,17 @@ public class HiViewPager extends ViewPager {
     private void start() {
         mHandler.removeCallbacksAndMessages(mRunnable);
         if (mAutoPlay) {
+            // 如果当前有在执行的任务，则不新添加
             mHandler.postDelayed(mRunnable,mIntervalTime);
         }
+    }
+
+    /**
+     * 停止滚动
+     */
+    private void stop() {
+        // 传null是为了清空所有消息，包括正在运行的
+        mHandler.removeCallbacksAndMessages(null);
     }
 
     /**
@@ -161,12 +170,6 @@ public class HiViewPager extends ViewPager {
         return nextPosition;
     }
 
-    /**
-     * 停止滚动
-     */
-    private void stop() {
-        mHandler.removeCallbacksAndMessages(mRunnable);
-    }
 
     /**
      * 设置viewpager的滚动速度

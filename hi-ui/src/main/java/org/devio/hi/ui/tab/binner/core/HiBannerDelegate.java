@@ -20,10 +20,10 @@ import java.util.List;
  * 将HiBanner的一些逻辑内聚在这，保证暴露给使用者的HiBanner干净整洁
  */
 public class HiBannerDelegate implements ViewPager.OnPageChangeListener, IHiBanner {
-    private Context mContext;
-    private HiBanner mBanner;
+    private final Context mContext;
+    private final HiBanner mBanner;
     private HiBannerAdapter mAdapter;
-    private HiIndicator mHiIndicator;
+    private HiIndicator<?> mHiIndicator;
     private boolean mAutoPlay;
     private boolean mLoop;
     private List<? extends HiBannerMo> mHiBannerMos;
