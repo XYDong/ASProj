@@ -19,5 +19,6 @@ public class HiBaseApplication extends Application {
     @Override
     public void onCreate() {
         super.onCreate();
+        ActivityManager.Companion.getInstance().init(this);
     }
 }

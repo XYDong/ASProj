@@ -3,6 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <uses-permission android:name="android.permission.INTERNET"/>
+    <permission android:name="android.permission.SET_PREFERRED_APPLICATIONS"/>
     <application
         android:name=".HiApplication"
         android:allowBackup="true"
@@ -28,6 +29,9 @@
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
+                <!--增加如下两项可以将应用设置为launcher 应用-->
+                <category android:name="android.intent.category.HOME"/>
+                <category android:name="android.intent.category.DEFAULT"/>
             </intent-filter>
 
             <meta-data

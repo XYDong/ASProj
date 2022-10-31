@@ -1,6 +1,7 @@
 package com.joker.common.ui.component;
 
 import android.os.Bundle;
+import android.util.Log;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
@@ -21,5 +22,6 @@ public class HiBaseActivity extends AppCompatActivity implements HiBaseActionInt
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        ActivityManager.Companion.getInstance().addFrontBackCallBack(front -> Log.e("onChanged", "当前处于前台：" + front));
     }
 }

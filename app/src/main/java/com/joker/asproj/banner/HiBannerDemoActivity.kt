@@ -4,8 +4,10 @@ import android.os.Bundle
 import android.widget.ImageView
 import android.widget.Switch
 import android.widget.TextView
+import android.widget.Toast
 import com.bumptech.glide.Glide
 import com.joker.asproj.R
+import com.joker.common.ui.component.ActivityManager
 import com.joker.common.ui.component.HiBaseActivity
 import org.devio.hi.library.hilibrary.log.HiLog
 import org.devio.hi.ui.tab.binner.HiBanner
@@ -42,6 +44,10 @@ class HiBannerDemoActivity : HiBaseActivity() {
             } else {
                 initView(HiCircleIndicator(this),autoPlay)
             }
+        }
+        val topActivity = ActivityManager.instance.topActivity
+        topActivity?.let {
+            Toast.makeText(this, "当前的activity：${it.localClassName}", Toast.LENGTH_SHORT).show()
         }
     }
 
