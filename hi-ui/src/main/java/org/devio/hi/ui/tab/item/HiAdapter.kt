@@ -5,147 +5,218 @@ import android.util.SparseArray
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.annotation.NonNull
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import androidx.recyclerview.widget.RecyclerView.ViewHolder
+import androidx.recyclerview.widget.StaggeredGridLayoutManager
+import java.lang.ref.WeakReference
 import java.lang.reflect.ParameterizedType
 
-class HiAdapter(context: Context) : RecyclerView.Adapter<ViewHolder>() {
-
+class HiAdapter(context: Context) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
+    private val recyclerViewRef: WeakReference<RecyclerView>? = null
     private var mContext: Context
     private var mInflater: LayoutInflater? = null
-    private var dataSets = ArrayList<HiDataItem<*, ViewHolder>>()
-    private var typeArrays =
-        SparseArray<HiDataItem<*, ViewHolder>>() // 查找效率高，用来关联item和type的
+    private var dataSets = java.util.ArrayList<HiDataItem<*, out RecyclerView.ViewHolder>>()
+    private var typeArrays = SparseArray<HiDataItem<*, out RecyclerView.ViewHolder>>()
 
     init {
         this.mContext = context
-        mInflater = LayoutInflater.from(mContext)
+        this.mInflater = LayoutInflater.from(context)
     }
 
     /**
-     * @param index 给指定位置添加item
-     * @param item item
-     * @param notify 添加之后是否要刷新
+     *在指定为上添加HiDataItem
      */
-    fun addItem(index: Int, item: HiDataItem<*, ViewHolder>, notify: Boolean) {
+    fun addItemAt(
+        index: Int,
+        dataItem: HiDataItem<*, out RecyclerView.ViewHolder>,
+        notify: Boolean
+    ) {
         if (index > 0) {
-            dataSets.add(index, item)
+            dataSets.add(index, dataItem)
         } else {
+            dataSets.add(dataItem)
+        }
+
+        val notifyPos = if (index > 0) index else dataSets.size - 1
+        if (notify) {
+            notifyItemInserted(notifyPos)
+        }
+    }
+
+    /**
+     * 往现有集合的尾部逐年items集合
+     */
+    fun addItems(items: List<HiDataItem<*, out RecyclerView.ViewHolder>>, notify: Boolean) {
+        val start = dataSets.size
+        for (item in items) {
             dataSets.add(item)
         }
-        val notifyPos = if (index > 0) index else dataSets.size - 1
-        notifyItemChanged(notifyPos)
-
-    }
-
-    /**
-     * 添加list
-     */
-    fun addItems(@NonNull items: List<HiDataItem<*, ViewHolder>>, notify: Boolean) {
-        val start = dataSets.size
-        items.forEach {
-            dataSets.add(it)
-        }
         if (notify) {
-            // 刷新指定区间的数据
-            notifyItemRangeInserted(start, dataSets.size - 1)
+            notifyItemRangeInserted(start, items.size)
         }
     }
 
+
     /**
-     * 删除指定位置的item
+     * 从指定位置上移除item
      */
-    fun removeItem(index: Int): HiDataItem<*, *>? {
+    private fun removeItemAt(index: Int): HiDataItem<*, out RecyclerView.ViewHolder>? {
         if (index > 0 && index < dataSets.size) {
-            return dataSets.removeAt(index)
+            val remove = dataSets.removeAt(index)
+            notifyItemRemoved(index)
+            return remove
+        } else {
+            return null
         }
-        return null
+    }
+
+
+    /**
+     * 移除指定item
+     */
+    fun removeItem(dataItem: HiDataItem<*, out RecyclerView.ViewHolder>) {
+        val index: Int = dataSets.indexOf(dataItem)
+        removeItemAt(index)
     }
 
     /**
-     * 删除指定元素
+     * 指定刷新 某个item的数据
      */
-    fun removeItem(@NonNull item: HiDataItem<*, *>) {
-        val index = dataSets.indexOf(item)
-        removeItem(index)
-    }
-    fun refreshItem(@NonNull item: HiDataItem<*, *>) {
-        val index = dataSets.indexOf(item)
-        notifyItemChanged(index)
+    fun refreshItem(dataItem: HiDataItem<*, out RecyclerView.ViewHolder>) {
+        val indexOf = dataSets.indexOf(dataItem)
+        notifyItemChanged(indexOf)
     }
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-        val dataItem = typeArrays[viewType]
-        var itemView = dataItem.getItemView(parent)
-        if (itemView == null) {
-            val layoutRes = dataItem.getItemLayoutRes()
-            if (layoutRes < 0) {
-                throw RuntimeException("dataItem: " + dataItem.javaClass.name + " must override getItemView or getItemLayoutRes.")
-            }
-            itemView = mInflater?.inflate(layoutRes, parent)
-        }
-        return createViewHolderInternal(dataItem.javaClass, itemView)!!
 
-    }
-
-    private fun createViewHolderInternal(
-        javaClass: Class<HiDataItem<*, ViewHolder>>,
-        view: View?
-    ): ViewHolder? {
-        // 通过javaClass.genericSuperclass获取HiDataItem 的class对象
-        val superclass = javaClass.genericSuperclass
-        // 判断是否是参数泛型类型的
-        if (superclass is ParameterizedType) {
-            // 获取泛型集合
-            var arguments = superclass.actualTypeArguments
-            for (argument in arguments) {
-                // 跌倒泛型参数的class对象
-                if (argument is Class<*> && ViewHolder::class.java.isAssignableFrom(argument)) run {
-                    return argument.getConstructor(View::class.java).newInstance(view) as ViewHolder?
-                }
-            }
-        }
-        return object : ViewHolder(view!!){}
-    }
-
-    override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        val hiDataItem = dataSets[position]
-        hiDataItem.onBindData(holder,position)
-    }
-
-    override fun getItemCount(): Int {
-        return dataSets.size
-    }
-
+    /**
+     * 以每种item类型的class.hashcode为 该item的viewType
+     *
+     * 这里把type存储起来，是为了onCreateViewHolder方法能够为不同类型的item创建不同的viewholder
+     */
     override fun getItemViewType(position: Int): Int {
-        // item和viewtype关联，可以用item的class的hancode作为type，相同类型的item返回值是一样的
-        val dataItem = dataSets[position]
+        val dataItem = dataSets.get(position)
         val type = dataItem.javaClass.hashCode()
-        // 因为还没有关联，所以需要先做关联
+        //如果还没有包含这种类型的item，则添加进来
         if (typeArrays.indexOfKey(type) < 0) {
             typeArrays.put(type, dataItem)
         }
         return type
     }
 
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
+        val dataItem = typeArrays.get(viewType)
+        var view: View? = dataItem.getItemView(parent)
+        if (view == null) {
+            val layoutRes = dataItem.getItemLayoutRes()
+            if (layoutRes < 0) {
+                RuntimeException("dataItem:" + dataItem.javaClass.name + " must override getItemView or getItemLayoutRes")
+            }
+            view = mInflater!!.inflate(layoutRes, parent, false)
+        }
+        return createViewHolderInternal(dataItem.javaClass, view!!)
+    }
+
+    override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
+        getItem(position)?.onBindData(holder, position)
+    }
+
+    private fun createViewHolderInternal(
+        javaClass: Class<HiDataItem<*, out RecyclerView.ViewHolder>>,
+        view: View
+    ): RecyclerView.ViewHolder {
+        //得到该Item的父类类型,即为HiDataItem.class。  class 也是type的一个子类。
+        //type的子类常见的有 class，类泛型,ParameterizedType参数泛型 ，TypeVariable字段泛型
+        //所以进一步判断它是不是参数泛型
+        val superclass = javaClass.genericSuperclass
+        if (superclass is ParameterizedType) {
+            //得到它携带的泛型参数的数组
+            val arguments = superclass.actualTypeArguments
+            //挨个遍历判断 是不是咱们想要的 RecyclerView.ViewHolder 类型的。
+            for (argument in arguments) {
+                if (argument is Class<*> && RecyclerView.ViewHolder::class.java.isAssignableFrom(
+                        argument
+                    )
+                ) {
+                    try {
+                        //如果是则使用反射 实例化类上标记的实际的泛型对象
+                        //这里需要  try-catch 一把，如果咱们直接在HiDataItem子类上标记 RecyclerView.ViewHolder，抽象类是不允许反射的
+                        return argument.getConstructor(View::class.java).newInstance(view) as RecyclerView.ViewHolder
+                    } catch (e: Throwable) {
+                        e.printStackTrace()
+
+                    }
+                }
+            }
+        }
+        return object : RecyclerView.ViewHolder(view) {}
+    }
+
+    override fun getItemCount(): Int {
+        return dataSets.size
+    }
+
+
     override fun onAttachedToRecyclerView(recyclerView: RecyclerView) {
         super.onAttachedToRecyclerView(recyclerView)
+
+        /**
+         * 为列表上的item 适配网格布局
+         */
         val layoutManager = recyclerView.layoutManager
         if (layoutManager is GridLayoutManager) {
             val spanCount = layoutManager.spanCount
-            layoutManager.spanSizeLookup = object : GridLayoutManager.SpanSizeLookup(){
+            layoutManager.spanSizeLookup = object : GridLayoutManager.SpanSizeLookup() {
                 override fun getSpanSize(position: Int): Int {
-                    if (position < dataSets.size){
-                        val hiDataItem = dataSets[position]
-                        val spanSize = hiDataItem.getSpanSize()
-                        return  if (spanSize <= 0) spanCount else spanSize
+                    if (position < dataSets.size) {
+                        val dataItem = getItem(position)
+                        if (dataItem != null) {
+                            val spanSize = dataItem.getSpanSize()
+                            return if (spanSize <= 0) spanCount else spanSize
+                        }
                     }
                     return spanCount
                 }
-
             }
         }
+    }
+
+    override fun onDetachedFromRecyclerView(recyclerView: RecyclerView) {
+        super.onDetachedFromRecyclerView(recyclerView)
+        recyclerViewRef?.clear()
+    }
+
+    private fun getAttachRecyclerView(): RecyclerView? {
+        return recyclerViewRef?.get()
+    }
+
+    fun getItem(position: Int): HiDataItem<*, RecyclerView.ViewHolder>? {
+        if (position < 0 || position >= dataSets.size)
+            return null
+        return dataSets[position] as HiDataItem<*, RecyclerView.ViewHolder>
+    }
+
+
+    override fun onViewAttachedToWindow(holder: RecyclerView.ViewHolder) {
+        val recyclerView = getAttachRecyclerView()
+        if (recyclerView != null) {
+            //瀑布流的item占比适配
+            val position = recyclerView.getChildAdapterPosition(holder.itemView)
+            val dataItem = getItem(position) ?: return
+            val lp = holder.itemView.layoutParams
+            if (lp != null && lp is StaggeredGridLayoutManager.LayoutParams) {
+                val manager = recyclerView.layoutManager as StaggeredGridLayoutManager?
+                val spanSize = dataItem.getSpanSize()
+                if (spanSize == manager!!.spanCount) {
+                    lp.isFullSpan = true
+                }
+            }
+
+            dataItem.onViewAttachedToWindow(holder)
+        }
+    }
+
+    override fun onViewDetachedFromWindow(holder: RecyclerView.ViewHolder) {
+        val dataItem = getItem(holder.bindingAdapterPosition) ?: return
+        dataItem.onViewDetachedFromWindow(holder)
     }
 }
