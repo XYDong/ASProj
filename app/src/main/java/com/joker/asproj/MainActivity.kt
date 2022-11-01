@@ -1,7 +1,9 @@
 package com.joker.asproj
 
+import android.content.Intent
 import android.os.Bundle
 import android.util.Log
+import com.joker.asproj.fragment.HomePageFragment
 import com.joker.asproj.logic.MainActivityLogic
 import com.joker.asproj.logic.MainActivityLogic.ActivityProvider
 import com.joker.common.ui.component.HiBaseActivity
@@ -15,6 +17,14 @@ class MainActivity : HiBaseActivity() ,ActivityProvider {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         mainActivityLogic = MainActivityLogic(this, savedInstanceState)
+//        supportFragmentManager
+//            .beginTransaction()
+//            .add(1,HomePageFragment())
+//            .replace(2,HomePageFragment())
+//            .remove(HomePageFragment())
+//            .addToBackStack(null)
+//            .commit()
+//        startActivity(Intent())
     }
 
     override fun onResume() {
@@ -25,12 +35,16 @@ class MainActivity : HiBaseActivity() ,ActivityProvider {
             Log.e("onresume:post",fragment_tab_view.width.toString() +
                     "----" + fragment_tab_view.height)
         }
-        // 这段代码是禁止重复的调用addOnDrawListener
-//        fragment_tab_view.viewTreeObserver.removeOnGlobalLayoutListener(this)
         fragment_tab_view.viewTreeObserver.addOnDrawListener {
+            // 这段代码是禁止重复的调用addOnDrawListener
+            fragment_tab_view.viewTreeObserver.removeOnGlobalLayoutListener{ this }
             Log.e("onresume:OnDrawListener",fragment_tab_view.width.toString() +
                     "----" + fragment_tab_view.height)
         }
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
     }
 
 
