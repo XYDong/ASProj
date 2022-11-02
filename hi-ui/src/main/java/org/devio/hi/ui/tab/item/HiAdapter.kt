@@ -97,9 +97,11 @@ class HiAdapter(context: Context) : RecyclerView.Adapter<RecyclerView.ViewHolder
         val dataItem = dataSets.get(position)
         val type = dataItem.javaClass.hashCode()
         //如果还没有包含这种类型的item，则添加进来
-        if (typeArrays.indexOfKey(type) < 0) {
-            typeArrays.put(type, dataItem)
-        }
+        // 按照注释的写法，只会添加一次
+//        if (typeArrays.indexOfKey(type) < 0) {
+//            typeArrays.put(type, dataItem)
+//        }
+        typeArrays.put(type,dataItem)
         return type
     }
 
