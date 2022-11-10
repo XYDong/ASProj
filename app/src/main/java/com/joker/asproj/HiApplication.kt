@@ -1,11 +1,11 @@
 package com.joker.asproj
 
+import com.alibaba.android.arouter.launcher.ARouter
 import com.alibaba.fastjson.JSONObject
 import com.joker.common.ui.component.HiBaseApplication
-import org.devio.hi.library.hilibrary.log.HiLogManager
 import org.devio.hi.library.hilibrary.log.HiLogConfig
 import org.devio.hi.library.hilibrary.log.HiLogConfig.JsonParser
-import org.devio.hi.library.hilibrary.log.HiLogPrinter
+import org.devio.hi.library.hilibrary.log.HiLogManager
 
 /**
  * @ProjectName: ASProj
@@ -43,5 +43,15 @@ class HiApplication : HiBaseApplication() {
                 return 5
             }
         })
+        initArouter()
+    }
+
+
+    private fun initArouter() {
+        if (BuildConfig.DEBUG) {
+            ARouter.openLog()
+            ARouter.openDebug()
+        }
+        ARouter.init(this)
     }
 }

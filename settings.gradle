@@ -4,12 +4,18 @@ pluginManagement {
         google()
         mavenCentral()
     }
+
 }
 dependencyResolutionManagement {
     repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
     repositories {
         google()
         mavenCentral()
+    }
+    buildscript {
+        dependencies {
+            classpath "com.alibaba:arouter-register:1.0.2"
+        }
     }
 }
 rootProject.name = "ASProj"

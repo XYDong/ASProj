@@ -7,4 +7,6 @@
     <string name="if_category">&#xf00a6;</string>
     <string name="if_favorite">&#xe639;</string>
     <string name="if_favorite1">&#xe620;</string>
+    <string name="title_register">注册</string>
+    <string name="title_login">登录</string>
 </resources>
